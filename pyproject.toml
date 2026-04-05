@@ -11,7 +11,7 @@ dependencies = [
     "polars==1.39.3",
     "scipy==1.17.1",
     "numpy==2.4.4",
-    "rich==13.9.4",
+    "rich==14.3.3",
 ]
 
 [project.scripts]
