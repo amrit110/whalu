@@ -51,9 +51,6 @@ jobs:
           source .venv/bin/activate
           pre-commit run --all-files
 
-      - name: pip-audit (gh-action-pip-audit)
-        uses: pypa/gh-action-pip-audit@v1.1.0
-        with:
-          virtual-environment: .venv/
-          ignore-vulns: |
-            GHSA-4xh5-x5gv-qwph
+      - name: pip-audit
+        run: |
+          uv run pip-audit --ignore-vuln GHSA-4xh5-x5gv-qwph

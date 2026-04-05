@@ -31,7 +31,22 @@ REGISTRY: dict[str, Species] = {
 
 
 def display_name(code: str) -> str:
-    """Return 'Common name (Code)' or just the code if unknown."""
+    """Return a human-readable species label for CLI output.
+
+    For species with a scientific name, returns ``"<emoji> <Common name>"``
+    (emoji omitted when blank). Falls back to the raw code for unknown
+    codes and call-type classes that have no scientific name.
+
+    Parameters
+    ----------
+    code : str
+        NOAA Perch species code (e.g. ``"Bm"``) or call-type label.
+
+    Returns
+    -------
+    str
+        Display label, or the original code if not found in the registry.
+    """
     s = REGISTRY.get(code)
     if s and s.scientific:
         return f"{s.emoji} {s.common}".strip()
@@ -39,5 +54,18 @@ def display_name(code: str) -> str:
 
 
 def scientific_name(code: str) -> str:
+    """Return the scientific name for a species code, or an empty string.
+
+    Parameters
+    ----------
+    code : str
+        NOAA Perch species code (e.g. ``"Mn"``).
+
+    Returns
+    -------
+    str
+        Binomial scientific name, or ``""`` for unknown codes and
+        call-type classes.
+    """
     s = REGISTRY.get(code)
     return s.scientific if s else ""
