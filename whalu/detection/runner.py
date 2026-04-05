@@ -27,14 +27,40 @@ def run_detections(
     threshold: float = THRESHOLD,
     offset_s: float = 0.0,
 ) -> pl.DataFrame:
-    """
-    Slide a window over audio, run model inference, return detections.
+    """Slide a window over audio, run model inference, and return detections.
 
-    Uses sigmoid activation (correct for multi-label classifiers).
-    Only emits rows where confidence >= threshold (default 0.5).
-    Windows with no species above threshold produce no rows.
+    Uses sigmoid activation, which is correct for multi-label classifiers
+    (independent per-class outputs, not softmax). Only emits rows where
+    confidence >= threshold. Windows with no species above threshold
+    produce no rows.
 
-    Schema: source, time_start_s, time_end_s, species, confidence, rank
+    Parameters
+    ----------
+    model : object
+        Embedding model with ``sample_rate`` (int), optional
+        ``window_size_s`` (float, default 5.0), ``class_list.classes``
+        (list[str]), and ``embed(audio_chunk)`` returning an object with
+        ``.logits[logits_key]`` as a numpy array.
+    audio : np.ndarray
+        Float32 audio array at ``model.sample_rate``.
+    source_name : str
+        Identifier written into the ``source`` column of every output row.
+    logits_key : str, optional
+        Key used to retrieve logits from the model output dict.
+        Default is ``"multispecies_whale"``.
+    threshold : float, optional
+        Minimum sigmoid confidence to include a detection. Default is 0.5.
+    offset_s : float, optional
+        Time offset (seconds) added to all ``time_start_s`` / ``time_end_s``
+        values. Useful when processing a file in chunks. Default is 0.0.
+
+    Returns
+    -------
+    pl.DataFrame
+        Detection rows with schema: ``source`` (str), ``time_start_s``
+        (float), ``time_end_s`` (float), ``species`` (str),
+        ``confidence`` (float), ``rank`` (int). Rank 1 is the
+        highest-confidence species in each window.
     """
     sr: int = model.sample_rate
     window_size_s: float = getattr(model, "window_size_s", 5.0)
