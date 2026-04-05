@@ -7,11 +7,21 @@ import polars as pl
 
 
 def add_timestamps(df: pl.DataFrame) -> pl.DataFrame:
-    """
-    Parse absolute UTC timestamps from the source column + time_start_s.
+    """Parse absolute UTC timestamps from the source column and time_start_s.
 
-    Source format: mbari/MARS-20260301T000000Z-16kHz
-    Adds columns: timestamp (datetime), hour (0-23), date (date)
+    Source format: ``mbari/MARS-20260301T000000Z-16kHz``
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        Detection DataFrame with ``source`` (str) and ``time_start_s`` (float)
+        columns.
+
+    Returns
+    -------
+    pl.DataFrame
+        Input DataFrame with three additional columns: ``timestamp``
+        (Datetime[ms, UTC]), ``hour`` (int, 0-23), and ``date`` (Date).
     """
     # Extract YYYYMMDD and HHMMSS from source string
     dates = []
@@ -41,7 +51,23 @@ def add_timestamps(df: pl.DataFrame) -> pl.DataFrame:
 
 
 def species_summary(df: pl.DataFrame) -> pl.DataFrame:
-    """Per-species totals: windows, time detected, mean/max confidence."""
+    """Compute per-species totals across all detections.
+
+    Considers only rank-1 detections with confidence >= 0.5.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        Detection DataFrame with ``rank``, ``confidence``, ``species``,
+        ``source``, and ``time_end_s`` columns.
+
+    Returns
+    -------
+    pl.DataFrame
+        One row per species with columns ``species``, ``windows``,
+        ``minutes``, ``mean_conf``, ``max_conf``, and ``pct_of_time``,
+        sorted by ``windows`` descending.
+    """
     rank1 = df.filter((pl.col("rank") == 1) & (pl.col("confidence") >= 0.5))
     # Estimate total windows from time span per source (non-detection windows
     # produce no rows, so we can't count them directly from the dataframe)
@@ -66,9 +92,26 @@ def species_summary(df: pl.DataFrame) -> pl.DataFrame:
 
 
 def hourly_activity(df: pl.DataFrame, top_n: int = 5) -> tuple[pl.DataFrame, list[str]]:
-    """
-    Detection rate (%) per species per hour of day.
-    Returns a wide DataFrame: rows = hours (0-23), cols = top species.
+    """Compute detection rate (%) per species per hour of day.
+
+    Uses a fixed denominator of 1440 windows per hour (3600 s / 2.5 s hop).
+    Missing hours are filled with 0.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        Detection DataFrame with ``rank``, ``confidence``, ``species``,
+        and ``hour`` columns.
+    top_n : int, optional
+        Number of most-detected species to include. Default is 5.
+
+    Returns
+    -------
+    pl.DataFrame
+        Wide DataFrame with 24 rows (one per hour) and one column per top
+        species containing the detection rate as a percentage.
+    list[str]
+        Species codes of the top-N species, ordered by total detections.
     """
     rank1 = df.filter((pl.col("rank") == 1) & (pl.col("confidence") >= 0.5))
 
@@ -101,7 +144,20 @@ def hourly_activity(df: pl.DataFrame, top_n: int = 5) -> tuple[pl.DataFrame, lis
 
 
 def daily_counts(df: pl.DataFrame) -> pl.DataFrame:
-    """Detections per day per species."""
+    """Count rank-1 detections per day per species.
+
+    Parameters
+    ----------
+    df : pl.DataFrame
+        Detection DataFrame with ``rank``, ``confidence``, ``date``, and
+        ``species`` columns.
+
+    Returns
+    -------
+    pl.DataFrame
+        One row per (date, species) pair with column ``windows``, sorted
+        by date then species.
+    """
     return (
         df.filter((pl.col("rank") == 1) & (pl.col("confidence") >= 0.5))
         .group_by(["date", "species"])

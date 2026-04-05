@@ -48,9 +48,9 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras --dev
 
-      - name: Install dependencies and check code
+      - name: Run tests
         run: |
-          uv run pytest -m "not integration_test" --cov whalu --cov-report=xml
+          uv run pytest -m "not integration_test" --cov whalu --cov-report=xml || ([ $? -eq 5 ] && echo "No tests collected" && exit 0)
 
       # Uncomment this once this repo is configured on Codecov
       - name: Upload coverage to Codecov
