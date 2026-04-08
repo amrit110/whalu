@@ -8,7 +8,7 @@ dependencies = [
     "perch-hoplite[tf]==1.0.1",
     "librosa==0.11.0",
     "soundfile==0.13.1",
-    "boto3==1.42.83",
+    "boto3==1.42.85",
     "polars==1.39.3",
     "scipy==1.17.1",
     "numpy==2.4.4",
