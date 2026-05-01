@@ -14,7 +14,7 @@ dependencies = [
     "numpy==2.4.4",
     "rich==15.0.0",
     "google-cloud-storage==3.10.1",
-    "cryptography>=46.0.7",
+    "cryptography>=47.0.0",
 ]
 
 [project.scripts]
