@@ -11,7 +11,7 @@ dependencies = [
     "boto3==1.42.87",
     "polars==1.40.1",
     "scipy==1.17.1",
-    "numpy==2.4.4",
+    "numpy==2.4.6",
     "rich==15.0.0",
     "google-cloud-storage==3.10.1",
     "cryptography>=46.0.7",
