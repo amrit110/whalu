@@ -9,7 +9,7 @@ dependencies = [
     "librosa==0.11.0",
     "soundfile==0.13.1",
     "boto3==1.42.87",
-    "polars==1.40.1",
+    "polars==1.41.0",
     "scipy==1.17.1",
     "numpy==2.4.4",
     "rich==15.0.0",
